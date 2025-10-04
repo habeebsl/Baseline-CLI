@@ -1,0 +1,35 @@
+{
+  "strict": false,
+  "targets": {
+    "baseline": "high"
+  },
+  "rules": {
+    "css-grid": "warn",
+    "flexbox": "off",
+    "async-functions": "off",
+    "fetch": "off",
+    "custom-elements": "warn",
+    "shadow-dom": "warn"
+  },
+  "ignore": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    ".git/**",
+    "*.min.js",
+    "*.min.css"
+  ],
+  "include": [
+    "src/**",
+    "lib/**",
+    "app/**",
+    "components/**",
+    "styles/**",
+    "*.html",
+    "*.css",
+    "*.js",
+    "*.ts"
+  ],
+  "autofix": false,
+  "outputFormat": "console"
+}

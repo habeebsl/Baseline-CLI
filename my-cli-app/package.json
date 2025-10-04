@@ -1,0 +1,39 @@
+{
+  "name": "baseline-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for checking Web Platform Baseline compatibility",
+  "main": "bin/cli.js",
+  "bin": {
+    "baseline": "bin/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node bin/cli.js",
+    "dev": "npm run build && node bin/cli.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "cli",
+    "baseline",
+    "web-platform",
+    "compatibility",
+    "browser-support",
+    "css",
+    "javascript",
+    "html"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^14.0.1",
+    "web-features": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.0",
+    "typescript": "^4.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "bin/**/*"
+  ]
+}
