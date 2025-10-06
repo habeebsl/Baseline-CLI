@@ -90,6 +90,77 @@ View or modify the current configuration interactively.
 baseline config
 ```
 
+### `baseline fix`
+
+Fix baseline compatibility issues in CSS files using AI. Analyzes CSS code and generates modern equivalents for outdated syntax.
+
+**Usage:**
+
+```bash
+baseline fix <file> [options]
+```
+
+**Options:**
+
+- `--lines <start-end>` - Fix only specific lines (e.g., `--lines 30-60`)
+- `--config <path>` - Path to configuration file
+- `--provider <openai|anthropic>` - AI provider to use (default: `openai`)
+- `--api-key <key>` - API key (overrides config and environment variables)
+
+**Examples:**
+
+```bash
+# Fix entire CSS file
+baseline fix src/styles.css
+
+# Fix specific line range
+baseline fix src/styles.css --lines 30-60
+
+# Use Anthropic instead of OpenAI
+baseline fix src/styles.css --provider anthropic
+
+# Provide API key directly
+baseline fix src/styles.css --api-key sk-your-key-here
+```
+
+**API Key Configuration:**
+
+The fix command requires an AI API key. Configure it in one of three ways:
+
+1. **Config file** (`.baseline.config.json`):
+```json
+{
+  "ai": {
+    "defaultProvider": "openai",
+    "providers": {
+      "openai": {
+        "apiKey": "sk-your-openai-key"
+      },
+      "anthropic": {
+        "apiKey": "sk-ant-your-anthropic-key"
+      }
+    }
+  }
+}
+```
+Then switch providers with `--provider anthropic` flag.
+
+2. **Environment variable**:
+```bash
+export OPENAI_API_KEY=sk-your-key-here
+# or
+export ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+3. **Command line flag**:
+```bash
+baseline fix file.css --api-key sk-your-key-here
+```
+
+**Get API Keys:**
+- OpenAI: https://platform.openai.com/api-keys
+- Anthropic: https://console.anthropic.com/
+
 ## Configuration
 
 The `.baseline.config.json` file controls how the CLI analyzes your code. Example configuration:
@@ -118,8 +189,18 @@ The `.baseline.config.json` file controls how the CLI analyzes your code. Exampl
     "*.css",
     "*.js"
   ],
-  "autofix": false,
-  "outputFormat": "console"
+  "outputFormat": "console",
+  "ai": {
+    "defaultProvider": "openai",
+    "providers": {
+      "openai": {
+        "apiKey": "sk-your-openai-key"
+      },
+      "anthropic": {
+        "apiKey": "sk-ant-your-anthropic-key"
+      }
+    }
+  }
 }
 ```
 
@@ -130,8 +211,10 @@ The `.baseline.config.json` file controls how the CLI analyzes your code. Exampl
 - `rules` - Override severity for specific features: `error`, `warn`, or `off`
 - `ignore` - Glob patterns for files to exclude
 - `include` - Glob patterns for files to check
-- `autofix` - Automatically fix issues when possible (experimental)
 - `outputFormat` - Default output format: `console`, `html`, `text`, or `json`
+- `ai.defaultProvider` - Default AI provider for fix command: `openai` or `anthropic`
+- `ai.providers.openai.apiKey` - OpenAI API key (optional, can use environment variables)
+- `ai.providers.anthropic.apiKey` - Anthropic API key (optional, can use environment variables)
 
 ## Output Formats
 

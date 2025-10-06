@@ -49,7 +49,6 @@ export const getDefaultConfig = (): BaselineConfig => {
             '**/*.jsx',
             '**/*.tsx'
         ],
-        autofix: false,
         outputFormat: 'console'
     };
 };

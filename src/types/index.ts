@@ -21,8 +21,18 @@ export interface BaselineConfig {
     };
     ignore: string[];
     include: string[];
-    autofix: boolean;
     outputFormat: 'console' | 'json' | 'html' | 'text';
+    ai?: {
+        defaultProvider?: 'openai' | 'anthropic';
+        providers?: {
+            openai?: {
+                apiKey?: string;
+            };
+            anthropic?: {
+                apiKey?: string;
+            };
+        };
+    };
 }
 
 export interface CheckOptions {

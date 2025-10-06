@@ -58,6 +58,24 @@ program
     await executeCommand('config', args);
   });
 
+// Fix command
+program
+  .command('fix <file>')
+  .description('Fix baseline compatibility issues in CSS files using AI')
+  .option('--lines <range>', 'fix only specific lines (e.g., 30-60)')
+  .option('--config <path>', 'path to configuration file')
+  .option('--provider <type>', 'AI provider (openai, anthropic)', 'openai')
+  .option('--api-key <key>', 'API key (overrides config and env)')
+  .action(async (file, options) => {
+    const args = [file];
+    if (options.lines) args.push('--lines', options.lines);
+    if (options.config) args.push('--config', options.config);
+    if (options.provider) args.push('--provider', options.provider);
+    if (options.apiKey) args.push('--api-key', options.apiKey);
+    
+    await executeCommand('fix', args);
+  });
+
 program.parse(process.argv);
 
 // Show help if no arguments provided

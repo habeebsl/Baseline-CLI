@@ -33,7 +33,6 @@ export const initCommand: Command = {
             console.log(`${colors.blue('Preset:')} ${preset}`);
             console.log(`${colors.blue('Strict mode:')} ${config.strict ? 'enabled' : 'disabled'}`);
             console.log(`${colors.blue('Target baseline:')} ${config.targets.baseline}`);
-            console.log(`${colors.blue('Auto-fix:')} ${config.autofix ? 'enabled' : 'disabled'}`);
             console.log('');
             console.log(colors.gray('You can now run:'));
             console.log(colors.gray('  baseline check           # Check all files'));
@@ -94,8 +93,14 @@ function createConfigFromPreset(preset: string): BaselineConfig {
             '*.js',
             '*.ts'
         ],
-        autofix: false,
-        outputFormat: 'console'
+        outputFormat: 'console',
+        ai: {
+            defaultProvider: 'openai',
+            providers: {
+                openai: {},
+                anthropic: {}
+            }
+        }
     };
     
     switch (preset) {
@@ -113,8 +118,7 @@ function createConfigFromPreset(preset: string): BaselineConfig {
                     'fetch': 'error',
                     'custom-elements': 'error',
                     'shadow-dom': 'error'
-                },
-                autofix: true
+                }
             };
             
         case 'legacy':
@@ -131,8 +135,7 @@ function createConfigFromPreset(preset: string): BaselineConfig {
                     'fetch': 'warn',
                     'custom-elements': 'warn',
                     'shadow-dom': 'off'
-                },
-                autofix: false
+                }
             };
             
         case 'balanced':
@@ -150,8 +153,7 @@ function createConfigFromPreset(preset: string): BaselineConfig {
                     'fetch': 'off',
                     'custom-elements': 'warn',
                     'shadow-dom': 'warn'
-                },
-                autofix: false
+                }
             };
     }
 }

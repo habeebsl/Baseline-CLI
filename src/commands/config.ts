@@ -76,7 +76,7 @@ async function viewConfig(configPath: string): Promise<void> {
         console.log(colors.bold('General Settings:'));
         console.log(`${colors.blue('Strict mode:')} ${config.strict ? colors.green('enabled') : colors.gray('disabled')}`);
         console.log(`${colors.blue('Target baseline:')} ${colors.cyan(config.targets.baseline)}`);
-        console.log(`${colors.blue('Auto-fix:')} ${config.autofix ? colors.green('enabled') : colors.gray('disabled')}`);
+        console.log(`        console.log('');`);
         console.log(`${colors.blue('Output format:')} ${colors.cyan(config.outputFormat)}`);
         console.log('');
         
