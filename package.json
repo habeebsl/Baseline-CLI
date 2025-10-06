@@ -1,6 +1,6 @@
 {
-  "name": "baseline-cli",
-  "version": "1.0.0",
+  "name": "@habeebsl/baseline-cli",
+  "version": "1.0.1",
   "description": "CLI tool for checking Web Platform Baseline compatibility",
   "main": "bin/cli.js",
   "bin": {

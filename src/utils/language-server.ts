@@ -107,14 +107,6 @@ export class LanguageServerParser {
 
       this.extractJSFeatures(sourceFile, content, features);
 
-      const program = ts.createProgram([filePath], { allowJs: true, checkJs: false });
-      const diagnostics = ts.getPreEmitDiagnostics(program, sourceFile);
-      if (diagnostics.length > 0) {
-        errors.push(...diagnostics.map(d => 
-          ts.flattenDiagnosticMessageText(d.messageText, '\n')
-        ));
-      }
-
     } catch (error) {
       errors.push(`JS/TS parsing error: ${error instanceof Error ? error.message : String(error)}`);
     }

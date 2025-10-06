@@ -5,7 +5,7 @@ A command-line tool that analyzes HTML, CSS, and JavaScript files to detect web 
 ## Installation
 
 ```bash
-npm install -g baseline-cli
+npm install -g @habeebsl/baseline-cli
 ```
 
 ## Quick Start
