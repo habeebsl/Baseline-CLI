@@ -31,23 +31,20 @@ exports.initCommand = {
     name: 'init',
     description: 'Initialize baseline configuration',
     async execute(args) {
-        console.log(utils_1.colors.bold('🚀 Initializing Baseline CLI Configuration'));
+        console.log(utils_1.colors.bold('Initializing Baseline CLI Configuration'));
         console.log('');
         const configPath = path.join(process.cwd(), '.baseline.config.json');
-        // Check if config already exists
-        if (fs.existsSync(configPath)) {
+        // Parse arguments for preset and force flag
+        const { preset, force } = parseInitOptions(args);
+        if (fs.existsSync(configPath) && !force) {
             console.log(utils_1.colors.yellow('⚠ Configuration file already exists at .baseline.config.json'));
             console.log('Use --force to overwrite or run "baseline config" to modify');
             return;
         }
-        // Parse arguments for preset
-        const preset = parseInitOptions(args);
-        // Create default configuration based on preset
         const config = createConfigFromPreset(preset);
         try {
-            // Write configuration file
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            console.log(utils_1.colors.green('✅ Configuration file created: .baseline.config.json'));
+            console.log(utils_1.colors.green('✓ Configuration file created: .baseline.config.json'));
             console.log('');
             console.log(utils_1.colors.bold('Configuration Summary:'));
             console.log(`${utils_1.colors.blue('Preset:')} ${preset}`);
@@ -66,9 +63,9 @@ exports.initCommand = {
         }
     }
 };
-// Parse init command options
 function parseInitOptions(args) {
     let preset = 'balanced';
+    let force = false;
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
         if (arg === '--preset' && i + 1 < args.length) {
@@ -78,10 +75,12 @@ function parseInitOptions(args) {
             }
             i++; // Skip next argument
         }
+        else if (arg === '--force') {
+            force = true;
+        }
     }
-    return preset;
+    return { preset, force };
 }
-// Create configuration from preset
 function createConfigFromPreset(preset) {
     const baseConfig = {
         strict: false,

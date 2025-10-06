@@ -32,7 +32,6 @@ exports.configCommand = {
     description: 'View and manage baseline configuration',
     async execute(args) {
         const configPath = path.join(process.cwd(), '.baseline.config.json');
-        // Parse command arguments
         const action = parseConfigOptions(args);
         switch (action.type) {
             case 'view':
@@ -52,7 +51,6 @@ exports.configCommand = {
         }
     }
 };
-// Parse config command options
 function parseConfigOptions(args) {
     if (args.length === 0) {
         return { type: 'view' };
@@ -74,10 +72,8 @@ function parseConfigOptions(args) {
             key: args[1]
         };
     }
-    // Default to view
     return { type: 'view' };
 }
-// View current configuration
 async function viewConfig(configPath) {
     console.log(utils_1.colors.bold('⚙️  Baseline Configuration'));
     console.log('');
@@ -125,7 +121,6 @@ async function viewConfig(configPath) {
         process.exit(1);
     }
 }
-// Set a configuration value
 async function setConfigValue(configPath, key, value) {
     if (!fs.existsSync(configPath)) {
         console.log(utils_1.colors.red('❌ No configuration file found'));
@@ -134,20 +129,16 @@ async function setConfigValue(configPath, key, value) {
     }
     try {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        // Parse the key path (e.g., "targets.baseline" or "strict")
         const keyParts = key.split('.');
         let current = config;
-        // Navigate to the parent object
         for (let i = 0; i < keyParts.length - 1; i++) {
             if (!(keyParts[i] in current)) {
                 current[keyParts[i]] = {};
             }
             current = current[keyParts[i]];
         }
-        // Set the value with appropriate type conversion
         const finalKey = keyParts[keyParts.length - 1];
         let parsedValue = value;
-        // Type conversion based on common config values
         if (value === 'true')
             parsedValue = true;
         else if (value === 'false')
@@ -157,16 +148,14 @@ async function setConfigValue(configPath, key, value) {
         else if (/^\\d*\\.\\d+$/.test(value))
             parsedValue = parseFloat(value);
         current[finalKey] = parsedValue;
-        // Write back to file
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        console.log(utils_1.colors.green(`✅ Updated ${utils_1.colors.cyan(key)} to ${utils_1.colors.bold(String(parsedValue))}`));
+        console.log(utils_1.colors.green(`✓ Updated ${utils_1.colors.cyan(key)} to ${utils_1.colors.bold(String(parsedValue))}`));
     }
     catch (error) {
         console.error(utils_1.colors.red(`Error setting configuration: ${error instanceof Error ? error.message : 'Unknown error'}`));
         process.exit(1);
     }
 }
-// Get a configuration value
 async function getConfigValue(configPath, key) {
     if (!fs.existsSync(configPath)) {
         console.log(utils_1.colors.red('❌ No configuration file found'));
@@ -174,10 +163,8 @@ async function getConfigValue(configPath, key) {
     }
     try {
         const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        // Parse the key path
         const keyParts = key.split('.');
         let current = config;
-        // Navigate to the value
         for (const part of keyParts) {
             if (!(part in current)) {
                 console.log(utils_1.colors.red(`❌ Key "${key}" not found in configuration`));
@@ -192,7 +179,6 @@ async function getConfigValue(configPath, key) {
         process.exit(1);
     }
 }
-// Edit configuration in default editor
 async function editConfig(configPath) {
     if (!fs.existsSync(configPath)) {
         console.log(utils_1.colors.red('❌ No configuration file found'));

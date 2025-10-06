@@ -1,4 +1,3 @@
-// Core CLI interfaces
 export interface Command {
     name: string;
     description: string;
@@ -9,7 +8,6 @@ export type CommandMap = {
     [key: string]: Command;
 };
 
-// Baseline compatibility types
 export type BaselineStatus = 'high' | 'low' | false;
 
 export interface BaselineConfig {
@@ -24,13 +22,13 @@ export interface BaselineConfig {
     ignore: string[];
     include: string[];
     autofix: boolean;
-    outputFormat: 'console' | 'json' | 'html';
+    outputFormat: 'console' | 'json' | 'html' | 'text';
 }
 
 export interface CheckOptions {
     path?: string;
     strict?: boolean;
-    format?: 'console' | 'json' | 'html';
+    format?: 'console' | 'json' | 'html' | 'text';
     fix?: boolean;
     quiet?: boolean;
     verbose?: boolean;
@@ -62,3 +60,5 @@ export interface ScanProgress {
     errors: number;
     warnings: number;
 }
+
+export * from './errors';

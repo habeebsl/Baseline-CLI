@@ -13,7 +13,7 @@ program
     .command('check [path]')
     .description('Check files for Web Platform Baseline compatibility')
     .option('--strict', 'fail on warnings')
-    .option('--format <type>', 'output format (console, json, html)', 'console')
+    .option('--format <type>', 'output format (console, json, html, text)', 'console')
     .option('--quiet', 'minimal output')
     .option('--verbose', 'detailed output')
     .action(async (path, options) => {
@@ -35,10 +35,13 @@ program
     .command('init')
     .description('Initialize baseline configuration')
     .option('--preset <type>', 'configuration preset (strict, balanced, legacy)', 'balanced')
+    .option('--force', 'overwrite existing configuration file')
     .action(async (options) => {
     const args = [];
     if (options.preset !== 'balanced')
         args.push('--preset', options.preset);
+    if (options.force)
+        args.push('--force');
     await (0, commands_1.executeCommand)('init', args);
 });
 // Config command

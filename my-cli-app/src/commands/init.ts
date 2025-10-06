@@ -8,29 +8,26 @@ export const initCommand: Command = {
     description: 'Initialize baseline configuration',
     
     async execute(args: string[]): Promise<void> {
-        console.log(colors.bold('🚀 Initializing Baseline CLI Configuration'));
+        console.log(colors.bold('Initializing Baseline CLI Configuration'));
         console.log('');
         
         const configPath = path.join(process.cwd(), '.baseline.config.json');
         
-        // Check if config already exists
-        if (fs.existsSync(configPath)) {
+        // Parse arguments for preset and force flag
+        const { preset, force } = parseInitOptions(args);
+        
+        if (fs.existsSync(configPath) && !force) {
             console.log(colors.yellow('⚠ Configuration file already exists at .baseline.config.json'));
             console.log('Use --force to overwrite or run "baseline config" to modify');
             return;
         }
         
-        // Parse arguments for preset
-        const preset = parseInitOptions(args);
-        
-        // Create default configuration based on preset
         const config = createConfigFromPreset(preset);
         
         try {
-            // Write configuration file
             fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
             
-            console.log(colors.green('✅ Configuration file created: .baseline.config.json'));
+            console.log(colors.green('✓ Configuration file created: .baseline.config.json'));
             console.log('');
             console.log(colors.bold('Configuration Summary:'));
             console.log(`${colors.blue('Preset:')} ${preset}`);
@@ -50,9 +47,9 @@ export const initCommand: Command = {
     }
 };
 
-// Parse init command options
-function parseInitOptions(args: string[]): string {
+function parseInitOptions(args: string[]): { preset: string; force: boolean } {
     let preset = 'balanced';
+    let force = false;
     
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
@@ -63,13 +60,14 @@ function parseInitOptions(args: string[]): string {
                 preset = presetValue;
             }
             i++; // Skip next argument
+        } else if (arg === '--force') {
+            force = true;
         }
     }
     
-    return preset;
+    return { preset, force };
 }
 
-// Create configuration from preset
 function createConfigFromPreset(preset: string): BaselineConfig {
     const baseConfig: BaselineConfig = {
         strict: false,

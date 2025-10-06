@@ -10,7 +10,6 @@ export const configCommand: Command = {
     async execute(args: string[]): Promise<void> {
         const configPath = path.join(process.cwd(), '.baseline.config.json');
         
-        // Parse command arguments
         const action = parseConfigOptions(args);
         
         switch (action.type) {
@@ -32,7 +31,6 @@ export const configCommand: Command = {
     }
 };
 
-// Parse config command options
 function parseConfigOptions(args: string[]): { type: string; key?: string; value?: string } {
     if (args.length === 0) {
         return { type: 'view' };
@@ -59,11 +57,9 @@ function parseConfigOptions(args: string[]): { type: string; key?: string; value
         };
     }
     
-    // Default to view
     return { type: 'view' };
 }
 
-// View current configuration
 async function viewConfig(configPath: string): Promise<void> {
     console.log(colors.bold('⚙️  Baseline Configuration'));
     console.log('');
@@ -118,7 +114,6 @@ async function viewConfig(configPath: string): Promise<void> {
     }
 }
 
-// Set a configuration value
 async function setConfigValue(configPath: string, key: string, value: string): Promise<void> {
     if (!fs.existsSync(configPath)) {
         console.log(colors.red('❌ No configuration file found'));
@@ -129,11 +124,9 @@ async function setConfigValue(configPath: string, key: string, value: string): P
     try {
         const config: BaselineConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         
-        // Parse the key path (e.g., "targets.baseline" or "strict")
         const keyParts = key.split('.');
         let current: any = config;
         
-        // Navigate to the parent object
         for (let i = 0; i < keyParts.length - 1; i++) {
             if (!(keyParts[i] in current)) {
                 current[keyParts[i]] = {};
@@ -141,11 +134,9 @@ async function setConfigValue(configPath: string, key: string, value: string): P
             current = current[keyParts[i]];
         }
         
-        // Set the value with appropriate type conversion
         const finalKey = keyParts[keyParts.length - 1];
         let parsedValue: any = value;
         
-        // Type conversion based on common config values
         if (value === 'true') parsedValue = true;
         else if (value === 'false') parsedValue = false;
         else if (/^\\d+$/.test(value)) parsedValue = parseInt(value);
@@ -153,10 +144,9 @@ async function setConfigValue(configPath: string, key: string, value: string): P
         
         current[finalKey] = parsedValue;
         
-        // Write back to file
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         
-        console.log(colors.green(`✅ Updated ${colors.cyan(key)} to ${colors.bold(String(parsedValue))}`));
+        console.log(colors.green(`✓ Updated ${colors.cyan(key)} to ${colors.bold(String(parsedValue))}`));
         
     } catch (error) {
         console.error(colors.red(`Error setting configuration: ${error instanceof Error ? error.message : 'Unknown error'}`));
@@ -164,7 +154,6 @@ async function setConfigValue(configPath: string, key: string, value: string): P
     }
 }
 
-// Get a configuration value
 async function getConfigValue(configPath: string, key: string): Promise<void> {
     if (!fs.existsSync(configPath)) {
         console.log(colors.red('❌ No configuration file found'));
@@ -174,11 +163,9 @@ async function getConfigValue(configPath: string, key: string): Promise<void> {
     try {
         const config: BaselineConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         
-        // Parse the key path
         const keyParts = key.split('.');
         let current: any = config;
         
-        // Navigate to the value
         for (const part of keyParts) {
             if (!(part in current)) {
                 console.log(colors.red(`❌ Key "${key}" not found in configuration`));
@@ -195,7 +182,6 @@ async function getConfigValue(configPath: string, key: string): Promise<void> {
     }
 }
 
-// Edit configuration in default editor
 async function editConfig(configPath: string): Promise<void> {
     if (!fs.existsSync(configPath)) {
         console.log(colors.red('❌ No configuration file found'));

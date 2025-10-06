@@ -1,1 +1,28 @@
-# This file is intentionally left blank.
+# Source files (only ship compiled JS)
+src/
+tsconfig.json
+*.ts
+!*.d.ts
+
+# Test files
+test-*
+
+# Config files (users create their own)
+.baseline.config.*
+
+# Generated reports
+baseline-report.*
+
+# Documentation (except README)
+BASELINE-STATUS-GUIDE.md
+IMPROVEMENTS.md
+
+# Development files
+.gitignore
+.git/
+.vscode/
+.idea/
+
+# Build artifacts
+*.tsbuildinfo
+node_modules/

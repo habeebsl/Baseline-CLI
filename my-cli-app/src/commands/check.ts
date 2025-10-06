@@ -1,8 +1,9 @@
-import { Command, BaselineResult, CheckOptions, FeatureResult, ScanProgress } from '../types';
-import { findFiles, colors, formatProgress, formatBaselineResult } from '../utils';
+import { Command, BaselineResult, CheckOptions, FeatureResult, ScanProgress, BaselineConfig } from '../types';
+import { findFiles, colors, formatProgress, formatBaselineResult, loadConfig, getDefaultConfig, generateHTMLReport, generateTextReport } from '../utils';
 import { parseFile } from '../utils/parsers';
 import * as path from 'path';
 import * as fs from 'fs';
+import { minimatch } from 'minimatch';
 
 export const checkCommand: Command = {
     name: 'check',
@@ -10,23 +11,52 @@ export const checkCommand: Command = {
     
     async execute(args: string[]): Promise<void> {
         const options = parseCheckOptions(args);
+        
+        const config = loadConfig(options.configFile) || getDefaultConfig();
+        
+        if (options.strict !== undefined) {
+            config.strict = options.strict;
+        }
+        if (options.format) {
+            config.outputFormat = options.format;
+        }
+        
         const targetPath = options.path || process.cwd();
         
-        console.log(colors.bold(`🔍 Baseline Compatibility Check`));
+        console.log(colors.bold(`Baseline Compatibility Check`));
         console.log(colors.gray(`Scanning: ${targetPath}`));
         console.log('');
         
         try {
-            // Determine if we're checking a file or directory
             const stats = fs.statSync(targetPath);
             let filesToCheck: string[];
             
             if (stats.isFile()) {
                 filesToCheck = [targetPath];
             } else {
-                // Find all relevant files
                 const extensions = ['.css', '.scss', '.sass', '.less', '.js', '.ts', '.jsx', '.tsx', '.html', '.htm'];
-                filesToCheck = findFiles(targetPath, extensions);
+                const allFiles = findFiles(targetPath, extensions);
+                
+                filesToCheck = allFiles.filter(file => {
+                    const relativePath = path.relative(process.cwd(), file);
+                    
+                    const shouldIgnore = config.ignore.some(pattern => 
+                        minimatch(relativePath, pattern, { dot: true })
+                    );
+                    
+                    if (shouldIgnore) {
+                        return false;
+                    }
+                    
+                    if (config.include.length > 0) {
+                        const shouldInclude = config.include.some(pattern => 
+                            minimatch(relativePath, pattern, { dot: true })
+                        );
+                        return shouldInclude;
+                    }
+                    
+                    return true;
+                });
             }
             
             if (filesToCheck.length === 0) {
@@ -34,10 +64,9 @@ export const checkCommand: Command = {
                 return;
             }
             
-            console.log(colors.blue(`📁 Found ${filesToCheck.length} file(s) to check`));
+            console.log(colors.blue(`Found ${filesToCheck.length} file(s) to check`));
             console.log('');
             
-            // Process files
             const results: BaselineResult[] = [];
             let totalErrors = 0;
             let totalWarnings = 0;
@@ -46,14 +75,17 @@ export const checkCommand: Command = {
                 const file = filesToCheck[i];
                 const relativePath = path.relative(process.cwd(), file);
                 
-                // Show progress
                 if (!options.quiet) {
                     const progress = formatProgress(i + 1, filesToCheck.length);
                     console.log(`${progress} ${colors.gray('Checking:')} ${relativePath}`);
                 }
                 
-                // Parse the file
-                const features = parseFile(file);
+                let features = await parseFile(file);
+                
+                features = applyConfigRules(features, config);
+                
+                features = applyTargetBaseline(features, config.targets.baseline);
+                
                 const errors = features.filter(f => f.severity === 'error').length;
                 const warnings = features.filter(f => f.severity === 'warn').length;
                 
@@ -70,7 +102,6 @@ export const checkCommand: Command = {
                 
                 results.push(result);
                 
-                // Show immediate results if verbose
                 if (options.verbose && features.length > 0) {
                     console.log(colors.gray(`  Features found in ${relativePath}:`));
                     features.forEach(feature => {
@@ -83,10 +114,9 @@ export const checkCommand: Command = {
             }
             
             console.log('');
-            console.log(colors.bold('📊 Results Summary'));
+            console.log(colors.bold('Results Summary'));
             console.log('='.repeat(50));
             
-            // Summary statistics
             console.log(`${colors.blue('Files checked:')} ${filesToCheck.length}`);
             console.log(`${colors.red('Errors:')} ${totalErrors}`);
             console.log(`${colors.yellow('Warnings:')} ${totalWarnings}`);
@@ -100,22 +130,41 @@ export const checkCommand: Command = {
             }
             console.log('');
             
-            // Detailed results
+            const summary = {
+                totalFiles: filesToCheck.length,
+                totalErrors,
+                totalWarnings,
+                passedFiles,
+                failedFiles
+            };
+            
             if (options.format === 'json') {
-                console.log(JSON.stringify(results, null, 2));
+                const output = JSON.stringify(results, null, 2);
+                const outputPath = path.join(process.cwd(), 'baseline-report.json');
+                fs.writeFileSync(outputPath, output);
+                console.log(colors.green(`✓ JSON report saved to: ${outputPath}`));
+            } else if (options.format === 'html') {
+                const htmlReport = generateHTMLReport(results, summary);
+                const outputPath = path.join(process.cwd(), 'baseline-report.html');
+                fs.writeFileSync(outputPath, htmlReport);
+                console.log(colors.green(`✓ HTML report saved to: ${outputPath}`));
+                console.log(colors.gray(`   Open in browser: file://${outputPath}`));
+            } else if (options.format === 'text') {
+                const textReport = generateTextReport(results, summary);
+                const outputPath = path.join(process.cwd(), 'baseline-report.txt');
+                fs.writeFileSync(outputPath, textReport);
+                console.log(colors.green(`✓ Text report saved to: ${outputPath}`));
             } else {
-                // Show files with issues
                 const filesWithIssues = results.filter(r => r.features.length > 0);
                 
                 if (filesWithIssues.length > 0) {
-                    console.log(colors.bold('📋 Detailed Results'));
+                    console.log(colors.bold('Detailed Results'));
                     console.log('');
                     
                     filesWithIssues.forEach(result => {
                         const statusIcon = result.passed ? colors.green('✓') : colors.red('✗');
                         console.log(`${statusIcon} ${colors.bold(result.file)}`);
                         
-                        // Group features by severity
                         const errorFeatures = result.features.filter(f => f.severity === 'error');
                         const warnFeatures = result.features.filter(f => f.severity === 'warn');
                         const infoFeatures = result.features.filter(f => f.severity === 'info');
@@ -146,15 +195,14 @@ export const checkCommand: Command = {
                 }
             }
             
-            // Exit with appropriate code
             const hasErrors = totalErrors > 0;
             const hasWarningsInStrict = options.strict && totalWarnings > 0;
             
             if (hasErrors || hasWarningsInStrict) {
-                console.log(colors.red('❌ Baseline compatibility check failed'));
+                console.log(colors.red('✗ Baseline compatibility check failed'));
                 process.exit(1);
             } else {
-                console.log(colors.green('✅ All files passed baseline compatibility check'));
+                console.log(colors.green('✓ All files passed baseline compatibility check'));
             }
             
         } catch (error) {
@@ -163,6 +211,43 @@ export const checkCommand: Command = {
         }
     }
 };
+
+// Apply config rules to override feature severity
+function applyConfigRules(features: FeatureResult[], config: BaselineConfig): FeatureResult[] {
+    return features.map(feature => {
+        const rule = config.rules[feature.feature];
+        
+        if (rule === 'off') {
+            return null;
+        }
+        
+        if (rule) {
+            return {
+                ...feature,
+                severity: rule
+            };
+        }
+        
+        return feature;
+    }).filter((f): f is FeatureResult => f !== null);
+}
+
+// Apply target baseline filter
+function applyTargetBaseline(features: FeatureResult[], targetBaseline: 'high' | 'low'): FeatureResult[] {
+    if (targetBaseline === 'low') {
+        return features.map(feature => {
+            if (feature.status === 'low' && feature.severity === 'warn') {
+                return {
+                    ...feature,
+                    severity: 'info'
+                };
+            }
+            return feature;
+        });
+    }
+    
+    return features;
+}
 
 // Parse command line options for check command
 function parseCheckOptions(args: string[]): CheckOptions {
@@ -184,9 +269,8 @@ function parseCheckOptions(args: string[]): CheckOptions {
             case '--format':
                 if (i + 1 < args.length) {
                     const format = args[i + 1];
-                    if (format === 'json' || format === 'html' || format === 'console') {
-                        options.format = format;
-                        i++; // Skip next argument as it's the format value
+                    if (format === 'json' || format === 'html' || format === 'text' || format === 'console') {
+                        options.format = format as 'console' | 'json' | 'html' | 'text';
                     }
                 }
                 break;
@@ -197,7 +281,6 @@ function parseCheckOptions(args: string[]): CheckOptions {
                 options.verbose = true;
                 break;
             default:
-                // If it doesn't start with --, it's probably a path
                 if (!arg.startsWith('--') && !options.path) {
                     options.path = arg;
                 }

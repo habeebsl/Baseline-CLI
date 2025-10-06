@@ -1,0 +1,30 @@
+# Build output
+dist/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# Test files
+test-*
+
+# Config backups and test configs
+.baseline.config.backup
+.baseline.config.test-*.json
+
+# Generated reports
+baseline-report.*
+
+# Documentation (except README)
+BASELINE-STATUS-GUIDE.md
+IMPROVEMENTS.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
