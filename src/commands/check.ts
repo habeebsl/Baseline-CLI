@@ -271,6 +271,7 @@ function parseCheckOptions(args: string[]): CheckOptions {
                     const format = args[i + 1];
                     if (format === 'json' || format === 'html' || format === 'text' || format === 'console') {
                         options.format = format as 'console' | 'json' | 'html' | 'text';
+                        i++; // Skip the format value in the next iteration
                     }
                 }
                 break;

@@ -28,3 +28,6 @@ IMPROVEMENTS.md
 # OS
 .DS_Store
 Thumbs.db
+
+.env*
+.baseline*

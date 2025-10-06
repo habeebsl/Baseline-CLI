@@ -3,6 +3,25 @@ import { BaselineStatus, FeatureResult, BaselineConfig } from '../types';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const expandEnvVariables = (obj: any): any => {
+    if (typeof obj === 'string') {
+        return obj.replace(/\$\{([^}]+)\}/g, (_, varName) => {
+            return process.env[varName] || '';
+        });
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(expandEnvVariables);
+    }
+    if (obj && typeof obj === 'object') {
+        const expanded: any = {};
+        for (const key in obj) {
+            expanded[key] = expandEnvVariables(obj[key]);
+        }
+        return expanded;
+    }
+    return obj;
+};
+
 export const loadConfig = (configPath?: string): BaselineConfig | null => {
     const defaultConfigPaths = [
         path.join(process.cwd(), '.baseline.config.json'),
@@ -15,7 +34,8 @@ export const loadConfig = (configPath?: string): BaselineConfig | null => {
         if (fs.existsSync(configFile)) {
             try {
                 const content = fs.readFileSync(configFile, 'utf-8');
-                const config: BaselineConfig = JSON.parse(content);
+                let config: BaselineConfig = JSON.parse(content);
+                config = expandEnvVariables(config);
                 return config;
             } catch (error) {
                 console.warn(colors.yellow(`⚠️  Warning: Could not parse config file ${configFile}`));

@@ -145,9 +145,38 @@ The fix command requires an AI API key. Configure it in one of three ways:
 ```
 Then switch providers with `--provider anthropic` flag.
 
+**You can also use environment variable expansion in the config file:**
+```json
+{
+  "ai": {
+    "defaultProvider": "openai",
+    "providers": {
+      "openai": {
+        "apiKey": "${MY_OPENAI_KEY}"
+      },
+      "anthropic": {
+        "apiKey": "${MY_ANTHROPIC_KEY}"
+      }
+    }
+  }
+}
+```
+
 2. **Environment variable**:
 ```bash
 export OPENAI_API_KEY=sk-your-key-here
+# or
+export ANTHROPIC_API_KEY=sk-ant-your-key-here
+```
+
+**Or use a `.env` file** (automatically loaded if present):
+```bash
+# .env
+OPENAI_API_KEY=sk-your-key-here
+ANTHROPIC_API_KEY=sk-ant-your-key-here
+# Or custom variable names
+MY_OPENAI_KEY=sk-your-key-here
+```
 # or
 export ANTHROPIC_API_KEY=sk-ant-your-key-here
 ```

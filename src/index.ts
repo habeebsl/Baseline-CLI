@@ -1,5 +1,17 @@
 import { Command } from 'commander';
 import { executeCommand } from './commands';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Try to load .env file if it exists in the current working directory
+try {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+        require('dotenv').config({ path: envPath });
+    }
+} catch (error) {
+    // dotenv not installed or error loading, continue without it
+}
 
 const packageJson = require('../package.json');
 const program = new Command();
